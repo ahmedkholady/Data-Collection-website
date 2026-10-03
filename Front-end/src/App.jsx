@@ -1,11 +1,18 @@
 import React from 'react';
+import { BrowserRouter } from 'react-router-dom';
+import { ThemeProvider } from './context/ThemeContext';
+import { LanguageProvider } from './context/LanguageContext';
+import { AppRoutes } from './routes/AppRoutes';
 
 function App() {
   return (
-    <div style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
-      <h1>Data Collection System</h1>
-      <p>Frontend foundation ready.</p>
-    </div>
+    <BrowserRouter>
+      <ThemeProvider>
+        <LanguageProvider>
+          <AppRoutes />
+        </LanguageProvider>
+      </ThemeProvider>
+    </BrowserRouter>
   );
 }
 
