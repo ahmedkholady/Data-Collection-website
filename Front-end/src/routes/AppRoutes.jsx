@@ -31,7 +31,10 @@ const PublicOnlyRoute = ({ children }) => {
 export const AppRoutes = () => {
   return (
     <Routes>
-      {/* Login Route (Public only - redirects inside if already logged in) */}
+      {/* Root path '/' ALWAYS redirects to '/login' */}
+      <Route path="/" element={<Navigate to="/login" replace />} />
+
+      {/* Login Route (Public only - redirects inside only if already logged in) */}
       <Route
         path="/login"
         element={
@@ -50,7 +53,6 @@ export const AppRoutes = () => {
           <Route path="/export" element={<ExportPage />} />
           <Route path="/backup" element={<BackupPage />} />
           <Route path="/settings" element={<SettingsPage />} />
-          <Route path="/" element={<Navigate to="/records" replace />} />
         </Route>
       </Route>
 

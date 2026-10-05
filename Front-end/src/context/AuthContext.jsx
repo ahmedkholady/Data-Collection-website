@@ -19,9 +19,11 @@ export const AuthProvider = ({ children }) => {
     }
   });
 
-  // Login session state
+  // Login session state - uses sessionStorage so reopening browser/tab always starts at /login
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return localStorage.getItem('app-auth-session') === 'true';
+    // Clear any legacy persistent login from localStorage
+    localStorage.removeItem('app-auth-session');
+    return sessionStorage.getItem('app-auth-session') === 'true';
   });
 
   // Current user info
@@ -35,7 +37,7 @@ export const AuthProvider = ({ children }) => {
   // Login handler
   const login = async (username, password) => {
     // Simulate network delay for smooth UX
-    await new Promise((res) => setTimeout(res, 600));
+    await new Promise((res) => setTimeout(res, 500));
 
     const trimmedUser = username.trim();
     const trimmedPass = password.trim();
@@ -43,7 +45,7 @@ export const AuthProvider = ({ children }) => {
     if (trimmedUser === credentials.username && trimmedPass === credentials.password) {
       setIsAuthenticated(true);
       setCurrentUser({ username: trimmedUser, role: 'admin' });
-      localStorage.setItem('app-auth-session', 'true');
+      sessionStorage.setItem('app-auth-session', 'true');
       return { success: true };
     } else {
       return {
@@ -56,6 +58,7 @@ export const AuthProvider = ({ children }) => {
   // Logout handler
   const logout = () => {
     setIsAuthenticated(false);
+    sessionStorage.removeItem('app-auth-session');
     localStorage.removeItem('app-auth-session');
   };
 
