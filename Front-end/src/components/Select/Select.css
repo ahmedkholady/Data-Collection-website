@@ -1,0 +1,50 @@
+/* ===================================================
+   Select Component Styles
+   Extends Input styles with custom arrow override
+   =================================================== */
+
+.select-container {
+  position: relative;
+  cursor: pointer;
+}
+
+.custom-select-field {
+  flex: 1;
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-family: inherit;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  /* extra padding so text doesn't overlap the arrow icon */
+  padding-inline-end: 2.5rem !important;
+}
+
+.custom-select-field option {
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+}
+
+.custom-select-field:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.select-arrow-icon {
+  position: absolute;
+  inset-inline-end: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  pointer-events: none;
+  transition: color var(--transition-speed);
+}
+
+.input-container:focus-within .select-arrow-icon {
+  color: var(--primary);
+}

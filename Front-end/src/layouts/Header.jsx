@@ -1,7 +1,7 @@
-import React from 'react';
-import { useLocation, Link } from 'react-router-dom';
+import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthContext';
 import {
   Menu,
   Sun,
@@ -15,13 +15,21 @@ import {
   ShieldCheck,
   Settings,
   LogIn,
+  LogOut,
 } from 'lucide-react';
 import './Header.css';
 
 export const Header = ({ toggleSidebar, isSidebarCollapsed }) => {
   const { theme, toggleTheme } = useTheme();
   const { language, toggleLanguage, t } = useLanguage();
+  const { isAuthenticated, currentUser, logout } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   const getPageTitleKey = (path) => {
     switch (path) {
@@ -86,21 +94,34 @@ export const Header = ({ toggleSidebar, isSidebarCollapsed }) => {
 
         <div className="header-divider"></div>
 
-        {/* User Account Area Placeholder */}
+        {/* User Account Area */}
         <div className="user-profile">
           <div className="avatar">
             <User size={18} />
           </div>
           <div className="user-info">
-            <span className="user-name">{t('userName')}</span>
+            <span className="user-name">
+              {isAuthenticated ? currentUser.username : t('userName')}
+            </span>
             <span className="user-role">{t('userRole')}</span>
           </div>
         </div>
 
-        {/* Structural Login Route Shortcut */}
-        <Link to="/login" className="login-shortcut-btn" title={t('login')}>
-          <LogIn size={18} />
-        </Link>
+        {/* Login / Logout Button */}
+        {isAuthenticated ? (
+          <button
+            onClick={handleLogout}
+            className="login-shortcut-btn"
+            style={{ color: '#ef4444' }}
+            title={t('logout')}
+          >
+            <LogOut size={18} />
+          </button>
+        ) : (
+          <Link to="/login" className="login-shortcut-btn" title={t('login')}>
+            <LogIn size={18} />
+          </Link>
+        )}
       </div>
     </header>
   );
