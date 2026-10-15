@@ -3,6 +3,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { LanguageProvider } from './context/LanguageContext';
 import { AuthProvider } from './context/AuthContext';
+import { RecordsProvider } from './context/RecordsContext';
 import { AppRoutes } from './routes/AppRoutes';
 
 function App() {
@@ -11,7 +12,9 @@ function App() {
       <ThemeProvider>
         <LanguageProvider>
           <AuthProvider>
-            <AppRoutes />
+            <RecordsProvider>
+              <AppRoutes />
+            </RecordsProvider>
           </AuthProvider>
         </LanguageProvider>
       </ThemeProvider>

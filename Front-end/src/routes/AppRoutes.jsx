@@ -21,20 +21,25 @@ const ProtectedRoute = () => {
 
 /**
  * Public only route wrapper:
- * If the user is already logged in, redirect them directly to /records
+ * If the user is already logged in, redirect them directly to /dashboard
  */
 const PublicOnlyRoute = ({ children }) => {
   const { isAuthenticated } = useAuth();
-  return isAuthenticated ? <Navigate to="/records" replace /> : children;
+  return isAuthenticated ? <Navigate to="/dashboard" replace /> : children;
 };
 
 export const AppRoutes = () => {
+  const { isAuthenticated } = useAuth();
+
   return (
     <Routes>
-      {/* Root path '/' ALWAYS redirects to '/login' */}
-      <Route path="/" element={<Navigate to="/login" replace />} />
+      {/* Root path '/' redirects to /dashboard if logged in, otherwise /login */}
+      <Route
+        path="/"
+        element={<Navigate to={isAuthenticated ? '/dashboard' : '/login'} replace />}
+      />
 
-      {/* Login Route (Public only - redirects inside only if already logged in) */}
+      {/* Login Route (Public only - redirects inside to /dashboard only if already logged in) */}
       <Route
         path="/login"
         element={
@@ -47,8 +52,8 @@ export const AppRoutes = () => {
       {/* Protected Routes (Must be logged in to access) */}
       <Route element={<ProtectedRoute />}>
         <Route element={<MainLayout />}>
-          <Route path="/records" element={<RecordsPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/records" element={<RecordsPage />} />
           <Route path="/import" element={<ImportPage />} />
           <Route path="/export" element={<ExportPage />} />
           <Route path="/backup" element={<BackupPage />} />
@@ -57,7 +62,10 @@ export const AppRoutes = () => {
       </Route>
 
       {/* Fallback Route */}
-      <Route path="*" element={<Navigate to="/login" replace />} />
+      <Route
+        path="*"
+        element={<Navigate to={isAuthenticated ? '/dashboard' : '/login'} replace />}
+      />
     </Routes>
   );
 };

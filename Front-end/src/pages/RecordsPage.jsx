@@ -1,5 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useLanguage } from '../context/LanguageContext';
+import { useRecords } from '../context/RecordsContext';
+import { recordsService } from '../services/recordsService';
 import { Button, Input, SearchInput, Modal, Select, Table } from '../components';
 import {
   Plus,
@@ -15,9 +17,11 @@ import {
   Database,
   Briefcase,
   Sparkles,
+  AlertCircle,
+  X,
+  Info,
 } from 'lucide-react';
 
-// Common sources for data collection
 const DATA_SOURCE_OPTIONS = [
   { value: 'إدخال يدوي', label: 'إدخال يدوي / Manual Entry' },
   { value: 'ملف Excel', label: 'ملف Excel / Imported File' },
@@ -27,22 +31,29 @@ const DATA_SOURCE_OPTIONS = [
   { value: 'أخرى', label: 'أخرى / Other' },
 ];
 
-// Initial empty records - awaiting client Excel import or manual entry
-const INITIAL_RECORDS = [];
-
 export const RecordsPage = () => {
-  const { t } = useLanguage();
-
-  // Records state
-  const [records, setRecords] = useState(INITIAL_RECORDS);
+  const { t, dir } = useLanguage();
+  const {
+    records,
+    customColumns,
+    dataSources,
+    isBackendHealthy,
+    addRecord,
+    updateRecord,
+    deleteRecord,
+    addCustomColumn,
+    removeCustomColumn,
+  } = useRecords();
 
   // Search state
   const [searchTerm, setSearchTerm] = useState('');
   const [isSearching, setIsSearching] = useState(false);
 
-  // Dynamic custom columns state (Jimmy's feature)
+  // Filter state
+  const [sourceFilter, setSourceFilter] = useState('');
+
+  // Dynamic custom columns state
   const [newColumnName, setNewColumnName] = useState('');
-  const [customColumns, setCustomColumns] = useState([]);
 
   // Modal state
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -59,13 +70,14 @@ export const RecordsPage = () => {
   });
   const [formErrors, setFormErrors] = useState({});
   const [isSaving, setIsSaving] = useState(false);
+  const [exportMessage, setExportMessage] = useState('');
 
   // ── Handlers ──────────────────────────────────────────────
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
     setIsSearching(true);
-    setTimeout(() => setIsSearching(false), 250);
+    setTimeout(() => setIsSearching(false), 200);
   };
 
   // Add custom column
@@ -73,18 +85,12 @@ export const RecordsPage = () => {
     e.preventDefault();
     const trimmed = newColumnName.trim();
     if (!trimmed) return;
-    if (customColumns.some((col) => col.name.toLowerCase() === trimmed.toLowerCase())) {
+    const success = addCustomColumn(trimmed);
+    if (!success) {
       alert(t('columnExistsError'));
       return;
     }
-    const newColKey = `col_${Date.now()}`;
-    setCustomColumns([...customColumns, { id: newColKey, name: trimmed }]);
     setNewColumnName('');
-  };
-
-  // Remove custom column
-  const handleRemoveColumn = (idToRemove) => {
-    setCustomColumns(customColumns.filter((col) => col.id !== idToRemove));
   };
 
   // Open modal for add
@@ -105,13 +111,17 @@ export const RecordsPage = () => {
   // Open modal for edit
   const handleOpenEdit = (record) => {
     setEditingRecord(record);
+    const customVals = {};
+    customColumns.forEach((col) => {
+      customVals[col.id] = record[col.id] || '';
+    });
     setFormData({
       phone: record.phone || '',
       name: record.name || '',
       source: record.source || 'إدخال يدوي',
-      city: record.city || '',
-      activity: record.activity || '',
-      customValues: { ...record },
+      city: record.city === '—' ? '' : record.city || '',
+      activity: record.activity === '—' ? '' : record.activity || '',
+      customValues: customVals,
     });
     setFormErrors({});
     setIsAddModalOpen(true);
@@ -120,7 +130,7 @@ export const RecordsPage = () => {
   // Delete record
   const handleDeleteRecord = (id) => {
     if (window.confirm(t('confirmDelete'))) {
-      setRecords((prev) => prev.filter((r) => r.id !== id));
+      deleteRecord(id);
     }
   };
 
@@ -141,13 +151,13 @@ export const RecordsPage = () => {
     }));
   };
 
-  // Form validation for Saudi mobile numbers (+9665xxxxxxxx, 009665xxxxxxxx, 05xxxxxxxx)
+  // Form validation for phone numbers (kept as string)
   const validateForm = () => {
     const errors = {};
     const cleanPhone = formData.phone.trim().replace(/[\s-()]/g, '');
     if (!cleanPhone) {
       errors.phone = t('errorInputMsg');
-    } else if (!/^(?:\+966|00966|966|0)?5[0-9]{8}$/.test(cleanPhone)) {
+    } else if (!/^(?:\+?[0-9]{8,15})$/.test(cleanPhone)) {
       errors.phone = t('errorInputMsg');
     }
     if (!formData.name.trim()) {
@@ -165,75 +175,101 @@ export const RecordsPage = () => {
     }
 
     setIsSaving(true);
-    await new Promise((res) => setTimeout(res, 500));
+    await new Promise((res) => setTimeout(res, 300));
 
     if (editingRecord) {
-      // Update existing
-      setRecords((prev) =>
-        prev.map((r) =>
-          r.id === editingRecord.id
-            ? {
-                ...r,
-                phone: formData.phone,
-                name: formData.name,
-                source: formData.source,
-                city: formData.city,
-                activity: formData.activity,
-                ...formData.customValues,
-              }
-            : r
-        )
-      );
-    } else {
-      // Add to the VERY END of the list as requested!
-      const newRec = {
-        id: Date.now(),
-        phone: formData.phone,
-        name: formData.name,
+      updateRecord(editingRecord.id, {
+        phone: formData.phone.trim(),
+        name: formData.name.trim(),
         source: formData.source,
-        city: formData.city || '—',
-        activity: formData.activity || '—',
+        city: formData.city.trim() || '—',
+        activity: formData.activity.trim() || '—',
         ...formData.customValues,
-      };
-      setRecords((prev) => [...prev, newRec]);
+      });
+    } else {
+      addRecord({
+        phone: formData.phone.trim(),
+        name: formData.name.trim(),
+        source: formData.source,
+        city: formData.city.trim() || '—',
+        activity: formData.activity.trim() || '—',
+        customValues: formData.customValues,
+      });
     }
 
     setIsSaving(false);
     setIsAddModalOpen(false);
   };
 
-  // Filtered records by search term
-  const filteredRecords = useMemo(() => {
-    if (!searchTerm.trim()) return records;
-    const term = searchTerm.toLowerCase().trim();
-    return records.filter((r) => {
-      const matchPhone = r.phone?.toLowerCase().includes(term);
-      const matchName = r.name?.toLowerCase().includes(term);
-      const matchSource = r.source?.toLowerCase().includes(term);
-      const matchCity = r.city?.toLowerCase().includes(term);
-      const matchActivity = r.activity?.toLowerCase().includes(term);
-      const matchCustom = customColumns.some((col) =>
-        String(r[col.id] || '').toLowerCase().includes(term)
-      );
-      return (
-        matchPhone ||
-        matchName ||
-        matchSource ||
-        matchCity ||
-        matchActivity ||
-        matchCustom
-      );
-    });
-  }, [records, searchTerm, customColumns]);
+  // Instant CSV export handler
+  const handleExportCsv = () => {
+    if (filteredRecords.length === 0) {
+      alert(t('noDataToExport'));
+      return;
+    }
 
-  // Exact columns configuration requested by Jimmy
+    try {
+      const exportCols = [
+        { key: 'seq', title: '#' },
+        { key: 'phone', title: t('phoneNumber') },
+        { key: 'name', title: t('clientName') },
+        { key: 'source', title: t('dataSource') },
+        { key: 'city', title: t('city') },
+        { key: 'activity', title: t('activityType') },
+        ...customColumns.map((col) => ({ key: col.id, title: col.name })),
+      ];
+
+      const blob = recordsService.generateCsvBlob(filteredRecords, exportCols);
+      const filename = `records_export_${new Date().toISOString().slice(0, 10)}.csv`;
+      recordsService.triggerDownload(blob, filename);
+
+      setExportMessage(t('exportSuccess'));
+      setTimeout(() => setExportMessage(''), 4000);
+    } catch (e) {
+      alert('Error during export: ' + e.message);
+    }
+  };
+
+  // Filtered records by search term & source
+  const filteredRecords = useMemo(() => {
+    let result = records;
+
+    if (sourceFilter) {
+      result = result.filter((r) => r.source === sourceFilter);
+    }
+
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase().trim();
+      result = result.filter((r) => {
+        const matchPhone = String(r.phone || '').toLowerCase().includes(term);
+        const matchName = String(r.name || '').toLowerCase().includes(term);
+        const matchSource = String(r.source || '').toLowerCase().includes(term);
+        const matchCity = String(r.city || '').toLowerCase().includes(term);
+        const matchActivity = String(r.activity || '').toLowerCase().includes(term);
+        const matchCustom = customColumns.some((col) =>
+          String(r[col.id] || '').toLowerCase().includes(term)
+        );
+        return (
+          matchPhone ||
+          matchName ||
+          matchSource ||
+          matchCity ||
+          matchActivity ||
+          matchCustom
+        );
+      });
+    }
+
+    return result;
+  }, [records, searchTerm, sourceFilter, customColumns]);
+
+  // Table columns configuration
   const tableColumns = useMemo(() => {
     const base = [
       {
         key: 'seq',
         title: '#',
         sortable: false,
-        // Sequential numbering 1, 2, 3... across all pages!
         render: (_val, _row, _idx, globalIndex) => (
           <span style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>
             {globalIndex}
@@ -327,7 +363,7 @@ export const RecordsPage = () => {
       },
     ];
 
-    // Append dynamic custom columns added by client
+    // Dynamic custom columns
     customColumns.forEach((col) => {
       base.push({
         key: col.id,
@@ -370,6 +406,40 @@ export const RecordsPage = () => {
       className="page-container"
       style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}
     >
+      {/* ── Status Banner (Storage notice) ── */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.75rem',
+          padding: '0.75rem 1rem',
+          borderRadius: 'var(--radius-sm)',
+          backgroundColor: 'rgba(59, 130, 246, 0.08)',
+          border: '1px solid rgba(59, 130, 246, 0.25)',
+          fontSize: '0.85rem',
+          color: 'var(--text-primary)',
+        }}
+      >
+        <Info size={18} style={{ color: 'var(--primary)', flexShrink: 0 }} />
+        <span>{t('clientSessionNotice')}</span>
+      </div>
+
+      {exportMessage && (
+        <div
+          style={{
+            padding: '0.75rem 1rem',
+            borderRadius: 'var(--radius-sm)',
+            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+            border: '1px solid rgba(16, 185, 129, 0.3)',
+            color: '#10b981',
+            fontSize: '0.875rem',
+            fontWeight: 600,
+          }}
+        >
+          ✓ {exportMessage}
+        </div>
+      )}
+
       {/* ── Page Header & Top Actions ── */}
       <div
         style={{
@@ -399,9 +469,7 @@ export const RecordsPage = () => {
           <Button
             variant="outline"
             icon={<Download size={18} />}
-            onClick={() =>
-              alert(`سيتم تصدير ${filteredRecords.length} سجل كملف Excel`)
-            }
+            onClick={handleExportCsv}
           >
             {t('exportExcel')}
           </Button>
@@ -425,7 +493,7 @@ export const RecordsPage = () => {
             flexWrap: 'wrap',
           }}
         >
-          <div style={{ flex: '1', minWidth: '280px' }}>
+          <div style={{ flex: '1', minWidth: '260px' }}>
             <SearchInput
               value={searchTerm}
               onChange={handleSearchChange}
@@ -434,9 +502,45 @@ export const RecordsPage = () => {
               placeholder={t('searchPlaceholder')}
             />
           </div>
-          <Button variant="secondary" icon={<SlidersHorizontal size={18} />}>
-            {t('filterBtn')}
-          </Button>
+
+          {/* Source filter */}
+          <div style={{ minWidth: '200px' }}>
+            <select
+              value={sourceFilter}
+              onChange={(e) => setSourceFilter(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '0.6rem 0.85rem',
+                borderRadius: 'var(--radius-sm)',
+                border: '1px solid var(--border-color)',
+                backgroundColor: 'var(--bg-surface)',
+                color: 'var(--text-primary)',
+                fontSize: '0.9rem',
+                fontFamily: 'inherit',
+              }}
+            >
+              <option value="">{t('allSources')}</option>
+              {DATA_SOURCE_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {(searchTerm || sourceFilter) && (
+            <Button
+              variant="ghost"
+              size="sm"
+              icon={<X size={16} />}
+              onClick={() => {
+                setSearchTerm('');
+                setSourceFilter('');
+              }}
+            >
+              {t('clearFilters')}
+            </Button>
+          )}
         </div>
 
         {searchTerm && (
@@ -453,7 +557,7 @@ export const RecordsPage = () => {
         )}
       </div>
 
-      {/* ── Dynamic Custom Columns Creator (Jimmy's Feature) ── */}
+      {/* ── Dynamic Custom Columns Creator ── */}
       <div className="placeholder-card" style={{ padding: '1.25rem' }}>
         <div
           style={{
@@ -548,7 +652,7 @@ export const RecordsPage = () => {
                 {col.name}
                 <button
                   type="button"
-                  onClick={() => handleRemoveColumn(col.id)}
+                  onClick={() => removeCustomColumn(col.id)}
                   style={{
                     cursor: 'pointer',
                     color: 'var(--text-muted)',
@@ -556,6 +660,10 @@ export const RecordsPage = () => {
                     lineHeight: 1,
                     display: 'flex',
                     alignItems: 'center',
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    marginInlineStart: '0.25rem',
                   }}
                   title={t('deleteColumnTitle')}
                 >
@@ -593,8 +701,8 @@ export const RecordsPage = () => {
         <Table
           columns={tableColumns}
           data={filteredRecords}
-          emptyText={searchTerm ? t('noRecordsFound') : t('noRecordsYet')}
-          defaultPageSize={5}
+          emptyText={searchTerm || sourceFilter ? t('noRecordsFound') : t('noRecordsYet')}
+          defaultPageSize={10}
         />
       </div>
 
@@ -675,7 +783,7 @@ export const RecordsPage = () => {
             onChange={handleFormChange('activity')}
           />
 
-          {/* Dynamic Inputs for custom columns if any exist */}
+          {/* Dynamic Inputs for custom columns */}
           {customColumns.map((col) => (
             <Input
               key={col.id}

@@ -45,7 +45,7 @@ export const LoginPage = () => {
     setIsLoading(false);
 
     if (res.success) {
-      navigate('/records');
+      navigate('/dashboard');
     } else {
       setErrorMessage(t('invalidCredentials'));
     }
