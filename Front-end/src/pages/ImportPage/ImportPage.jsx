@@ -1,8 +1,8 @@
 import React, { useState, useRef } from 'react';
-import { useLanguage } from '../context/LanguageContext';
-import { useRecords } from '../context/RecordsContext';
-import { recordsService } from '../services/recordsService';
-import { Button } from '../components';
+import { useLanguage } from '../../context/LanguageContext';
+import { useRecords } from '../../context/RecordsContext';
+import { recordsService } from '../../services/recordsService';
+import { Button } from '../../components';
 import {
   Upload,
   FileText,
@@ -18,6 +18,7 @@ import {
   ArrowLeft,
   Info,
 } from 'lucide-react';
+import './ImportPage.css';
 
 const MAX_FILE_SIZE_BYTES = 500 * 1024 * 1024; // 500 MB
 
@@ -176,7 +177,7 @@ export const ImportPage = () => {
   };
 
   return (
-    <div className="page-container" style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
+    <div className="page-container import-page-container">
       {/* ── Page Header ── */}
       <div>
         <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { useLanguage } from '../context/LanguageContext';
+import { useLanguage } from '../../context/LanguageContext';
 import {
   LayoutDashboard,
   Database,
@@ -100,3 +100,5 @@ export const Sidebar = ({ isCollapsed, isMobileOpen, closeMobileSidebar, toggleS
     </>
   );
 };
+
+export default Sidebar;

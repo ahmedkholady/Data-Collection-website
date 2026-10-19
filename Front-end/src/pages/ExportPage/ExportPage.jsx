@@ -1,9 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { useLanguage } from '../context/LanguageContext';
-import { useRecords } from '../context/RecordsContext';
-import { recordsService } from '../services/recordsService';
-import { Button } from '../components';
+import { useLanguage } from '../../context/LanguageContext';
+import { useRecords } from '../../context/RecordsContext';
+import { recordsService } from '../../services/recordsService';
+import { Button } from '../../components';
 import {
   Download,
   FileSpreadsheet,
@@ -15,6 +15,7 @@ import {
   Plus,
   Info,
 } from 'lucide-react';
+import './ExportPage.css';
 
 export const ExportPage = () => {
   const { t } = useLanguage();
@@ -116,7 +117,7 @@ export const ExportPage = () => {
   };
 
   return (
-    <div className="page-container" style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
+    <div className="page-container export-page-container">
       {/* ── Page Header ── */}
       <div>
         <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>

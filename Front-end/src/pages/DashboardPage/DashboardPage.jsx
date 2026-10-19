@@ -1,9 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useLanguage } from '../context/LanguageContext';
-import { useAuth } from '../context/AuthContext';
-import { useRecords } from '../context/RecordsContext';
-import { Button } from '../components';
+import { useLanguage } from '../../context/LanguageContext';
+import { useAuth } from '../../context/AuthContext';
+import { useRecords } from '../../context/RecordsContext';
+import { Button } from '../../components';
 import {
   LayoutDashboard,
   Database,
@@ -22,6 +22,7 @@ import {
   MapPin,
   Clock,
 } from 'lucide-react';
+import './DashboardPage.css';
 
 export const DashboardPage = () => {
   const { t, dir } = useLanguage();
@@ -34,7 +35,7 @@ export const DashboardPage = () => {
   const recentRecords = records.slice(-4).reverse();
 
   return (
-    <div className="page-container" style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
+    <div className="page-container dashboard-container">
       {/* ── Welcome Header ── */}
       <div
         className="placeholder-card"

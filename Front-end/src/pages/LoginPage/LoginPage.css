@@ -1,0 +1,18 @@
+/* LoginPage specific styles */
+.login-page-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-main);
+  padding: 1.5rem;
+  position: relative;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 430px;
+  box-shadow: var(--shadow-lg);
+  border-radius: var(--radius-lg);
+  padding: 2.5rem 2rem;
+}
