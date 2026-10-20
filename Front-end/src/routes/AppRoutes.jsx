@@ -1,14 +1,16 @@
 import React from 'react';
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { MainLayout } from '../layouts/MainLayout';
-import { DashboardPage } from '../pages/DashboardPage';
-import { RecordsPage } from '../pages/RecordsPage';
-import { ImportPage } from '../pages/ImportPage';
-import { ExportPage } from '../pages/ExportPage';
-import { BackupPage } from '../pages/BackupPage';
-import { SettingsPage } from '../pages/SettingsPage';
-import { LoginPage } from '../pages/LoginPage';
+import { MainLayout } from '../layouts';
+import {
+  DashboardPage,
+  RecordsPage,
+  ImportPage,
+  ExportPage,
+  BackupPage,
+  SettingsPage,
+  LoginPage,
+} from '../pages';
 
 /**
  * Route protection wrapper:

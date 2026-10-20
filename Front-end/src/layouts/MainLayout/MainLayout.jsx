@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
-import { Header } from './Header';
-import { Sidebar } from './Sidebar';
+import { Header } from '../Header';
+import { Sidebar } from '../Sidebar';
 
 export const MainLayout = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -39,3 +39,5 @@ export const MainLayout = () => {
     </div>
   );
 };
+
+export default MainLayout;

@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react';
-import { useLanguage } from '../context/LanguageContext';
-import { useRecords } from '../context/RecordsContext';
-import { recordsService } from '../services/recordsService';
-import { Button, Input, SearchInput, Modal, Select, Table } from '../components';
+import { useLanguage } from '../../context/LanguageContext';
+import { useRecords } from '../../context/RecordsContext';
+import { recordsService } from '../../services/recordsService';
+import { Button, Input, SearchInput, Modal, Select, Table } from '../../components';
 import {
   Plus,
   Download,
@@ -21,6 +21,7 @@ import {
   X,
   Info,
 } from 'lucide-react';
+import './RecordsPage.css';
 
 const DATA_SOURCE_OPTIONS = [
   { value: 'إدخال يدوي', label: 'إدخال يدوي / Manual Entry' },
@@ -403,8 +404,7 @@ export const RecordsPage = () => {
 
   return (
     <div
-      className="page-container"
-      style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}
+      className="page-container records-page-container"
     >
       {/* ── Status Banner (Storage notice) ── */}
       <div

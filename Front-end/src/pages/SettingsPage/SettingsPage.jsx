@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { useLanguage } from '../context/LanguageContext';
-import { useAuth } from '../context/AuthContext';
-import { Button, Input } from '../components';
+import { useLanguage } from '../../context/LanguageContext';
+import { useAuth } from '../../context/AuthContext';
+import { Button, Input } from '../../components';
 import { Settings, KeyRound, User, Lock, Save, CheckCircle, AlertCircle } from 'lucide-react';
+import './SettingsPage.css';
 
 export const SettingsPage = () => {
   const { t } = useLanguage();
@@ -41,7 +42,7 @@ export const SettingsPage = () => {
   };
 
   return (
-    <div className="page-container" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+    <div className="page-container settings-page-container">
       {/* ── Page Header ── */}
       <div>
         <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>

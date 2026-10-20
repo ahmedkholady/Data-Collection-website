@@ -1,8 +1,8 @@
 import React, { useState, useRef } from 'react';
-import { useLanguage } from '../context/LanguageContext';
-import { useRecords } from '../context/RecordsContext';
-import { recordsService } from '../services/recordsService';
-import { Button, Modal, Input } from '../components';
+import { useLanguage } from '../../context/LanguageContext';
+import { useRecords } from '../../context/RecordsContext';
+import { recordsService } from '../../services/recordsService';
+import { Button, Modal, Input } from '../../components';
 import {
   ShieldCheck,
   Download,
@@ -15,6 +15,7 @@ import {
   RefreshCw,
   Info,
 } from 'lucide-react';
+import './BackupPage.css';
 
 export const BackupPage = () => {
   const { t, dir } = useLanguage();
@@ -137,7 +138,7 @@ export const BackupPage = () => {
   };
 
   return (
-    <div className="page-container" style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
+    <div className="page-container backup-page-container">
       {/* ── Page Header ── */}
       <div>
         <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>

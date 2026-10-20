@@ -1,0 +1,6 @@
+/* ExportPage specific styles */
+.export-page-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}

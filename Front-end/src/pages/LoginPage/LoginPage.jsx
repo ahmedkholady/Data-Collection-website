@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useLanguage } from '../context/LanguageContext';
-import { useTheme } from '../context/ThemeContext';
-import { useAuth } from '../context/AuthContext';
-import { Button, Input } from '../components';
+import { useLanguage } from '../../context/LanguageContext';
+import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
+import { Button, Input } from '../../components';
 import {
   Database,
   User,
@@ -16,6 +16,7 @@ import {
   Globe,
   AlertCircle,
 } from 'lucide-react';
+import './LoginPage.css';
 
 export const LoginPage = () => {
   const { t, language, toggleLanguage } = useLanguage();
@@ -52,17 +53,7 @@ export const LoginPage = () => {
   };
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'var(--bg-main)',
-        padding: '1.5rem',
-        position: 'relative',
-      }}
-    >
+    <div className="login-page-container">
       {/* Top Floating Controls (Theme & Language) */}
       <div
         style={{
@@ -105,16 +96,7 @@ export const LoginPage = () => {
       </div>
 
       {/* Main Login Card */}
-      <div
-        className="placeholder-card"
-        style={{
-          width: '100%',
-          maxWidth: '430px',
-          boxShadow: 'var(--shadow-lg)',
-          borderRadius: 'var(--radius-lg)',
-          padding: '2.5rem 2rem',
-        }}
-      >
+      <div className="placeholder-card login-card">
         {/* Header / Brand */}
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <div
